@@ -12,7 +12,8 @@ public class PedidoService
     public PedidoService(AppDbContext context)
     {
         _context = context;
-    }
+    }  
+
     public async Task<List<Pedido>> ListarAsync()
     {
         return await _context.Pedidos
@@ -44,6 +45,29 @@ public class PedidoService
         _context.Pedidos.Add(pedido);
         await _context.SaveChangesAsync();
         
+        return pedido;
+    }
+
+    // Atualiza apenas o status do pedido
+    public async Task<Pedido?> AtualizarStatusAsync(Guid id, AtualizarPedidoDto dto)
+    {
+        var pedido = await _context.Pedidos.FindAsync(id);
+
+        if (pedido is null) return null;
+        var RegrasTransicao = pedido.Status switch
+        {
+            StatusPedido.Pendente => dto.Status is StatusPedido.Iniciado or StatusPedido.Cancelado,
+            StatusPedido.Iniciado => dto.Status is StatusPedido.Processado or StatusPedido.Cancelado,
+            StatusPedido.Processado => dto.Status is StatusPedido.Enviado or StatusPedido.Cancelado,
+            StatusPedido.Enviado => false,
+            StatusPedido.Cancelado => false,
+            _ => false
+
+        };
+        if (!RegrasTransicao) throw new Exception($"Não é possível alterar o status de '{pedido.Status}' para '{dto.Status}'.");
+
+        await _context.SaveChangesAsync();
+
         return pedido;
     }
 }
