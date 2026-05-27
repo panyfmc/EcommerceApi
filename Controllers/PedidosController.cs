@@ -14,7 +14,6 @@ public class PedidosController : ControllerBase
     }
 
     [HttpGet]   
-    // faz retornar a resposta do servidor
     public async Task<IActionResult> Listar()
     {
         var pedidos = await _pedidoService.ListarAsync();
@@ -46,5 +45,14 @@ public class PedidosController : ControllerBase
         {
             return BadRequest(ex.Message);  // retorna status HTTP Bad Request
         }
+    }
+
+
+    [HttpPatch("{id}/status")]
+    public async Task<IActionResult> AtualizarStatus(Guid id, AtualizarStatusDto dto)
+    {
+        var pedido = await _pedidoService.AtualizarStatusAsync(id, dto);
+        if (pedido is null) return NotFound();
+        return Ok(pedido);
     }
 }
