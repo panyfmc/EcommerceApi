@@ -13,6 +13,7 @@ public class PedidoService
         _context = context;
     }  
 
+    // apenas exibe todos os pedidos registrados (com detalhes)
     public async Task<List<Pedido>> ListarAsync()
     {
         return await _context.Pedidos
@@ -28,7 +29,8 @@ public class PedidoService
             .ThenInclude(i => i.Produto)
             .FirstOrDefaultAsync(p => p.Id == id);
     }
-
+        
+        // fazer um novo pedido  
     public async Task<Pedido> CriarAsync(CriarPedidoDto dto)
     {
         if (dto.Itens.Count == 0) throw new Exception("Pedido deve possuir ao menos um produto.");
@@ -88,10 +90,25 @@ public class PedidoService
             _ => false
 
         };
+            // saída para quando a regra de transição de status nao condiz com as métricas 
         if (!RegrasTransicao) throw new Exception($"Não é possível alterar o status de '{pedido.Status}' para '{dto.Status}'.");
         pedido.Status = dto.Status;
         await _context.SaveChangesAsync();
 
         return pedido;
+    }
+    // Busca o pedido, deleta e retorna bool
+    public async Task<bool> DeletarAsync(Guid id) 
+    {
+        var pedido = await _context.Pedidos
+            .Include(p => p.Itens)
+            .FirstOrDefaultAsync(p => p.Id == id);
+
+        if (pedido is null) return false;
+
+        _context.Pedidos.Remove(pedido);
+        await _context.SaveChangesAsync();
+
+        return true;
     }
 }
