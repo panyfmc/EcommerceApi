@@ -51,8 +51,15 @@ public class PedidosController : ControllerBase
     [HttpPatch("{id}/status")]
     public async Task<IActionResult> AtualizarStatus(Guid id, AtualizarStatusDto dto)
     {
-        var pedido = await _pedidoService.AtualizarStatusAsync(id, dto);
-        if (pedido is null) return NotFound();
-        return Ok(pedido);
+        try
+        {
+            var pedido = await _pedidoService.AtualizarStatusAsync(id, dto);
+            if (pedido is null) return NotFound("Pedido não encontrado");
+            return Ok(pedido);    
+        }
+        catch(Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 }
