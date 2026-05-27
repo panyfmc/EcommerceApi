@@ -11,7 +11,7 @@ public class PedidoService
     public PedidoService(AppDbContext context)
     {
         _context = context;
-    }  
+    }       
 
     // apenas exibe todos os pedidos registrados (com detalhes)
     public async Task<List<Pedido>> ListarAsync()
@@ -61,7 +61,7 @@ public class PedidoService
         {
             Id = Guid.NewGuid(),
             Comprador = dto.Comprador,
-            Status = StatusPedido.Pendente,
+            Status = StatusPedido.Iniciado,
             Itens = itens
         };
 
@@ -71,6 +71,76 @@ public class PedidoService
         return pedido;
     }
 
+
+        // atualiza comprador e/ou produtos do pedido
+    public async Task<Pedido?> AtualizarAsync(Guid id, AtualizarPedidoDto dto)
+    {
+        var pedido = await _context.Pedidos
+            .Include(p => p.Itens)
+            .ThenInclude(i => i.Produto)
+            .FirstOrDefaultAsync(p => p.Id == id);
+
+        if (pedido is null) return null;
+
+        // apenas pedidos não processados podem ser alterados
+        if (pedido.Status != StatusPedido.Iniciado)
+            throw new Exception($"Apenas pedidos com status 'Iniciado' podem ser alterados.");
+
+        // atualiza comprador se informado
+        if (!string.IsNullOrWhiteSpace(dto.Comprador))
+            pedido.Comprador = dto.Comprador;
+
+        // atualiza itens se informado
+        if (dto.Itens is not null && dto.Itens.Count > 0)
+        {
+            var produtoIds = dto.Itens.Select(i => i.ProdutoId).ToList();
+            var produtos = await _context.Produtos
+                .Where(p => produtoIds.Contains(p.Id))
+                .ToListAsync();
+
+            // 1. Remove do banco os itens antigos que NÃO vieram no DTO novo
+            var itensParaRemover = pedido.Itens
+                .Where(antigo => !dto.Itens.Any(novo => novo.ProdutoId == antigo.ProdutoId))
+                .ToList();
+                
+            foreach (var item in itensParaRemover)
+            {
+                _context.Remove(item);
+            }
+
+            // 2. Atualiza os itens que restaram ou adiciona os novos
+            foreach (var i in dto.Itens)
+            {
+                var produto = produtos.FirstOrDefault(p => p.Id == i.ProdutoId)
+                    ?? throw new Exception($"Produto {i.ProdutoId} não encontrado.");
+
+                var itemExistente = pedido.Itens.FirstOrDefault(item => item.ProdutoId == i.ProdutoId);
+
+                if (itemExistente != null)
+                {
+                    // Se o produto já estava no pedido, só atualizamos a quantidade e valor
+                    // Mantendo o mesmo ID de item que o banco já conhece!
+                    itemExistente.Quantidade = i.Quantidade;
+                    itemExistente.ValorUnico = produto.Valor;
+                }
+                else
+                {
+                    // Se é um produto novo entrando no pedido, adicionamos um novo PedidoItem
+                    pedido.Itens.Add(new PedidoItem
+                    {
+                        Id = Guid.NewGuid(),
+                        PedidoId = pedido.Id,
+                        ProdutoId = produto.Id,
+                        Quantidade = i.Quantidade,
+                        ValorUnico = produto.Valor
+                    });
+                }
+            }
+        }
+
+        await _context.SaveChangesAsync();
+        return pedido;
+    }
     // Atualiza apenas o status do pedido
     public async Task<Pedido?> AtualizarStatusAsync(Guid id, AtualizarStatusDto dto)
     {
@@ -82,7 +152,6 @@ public class PedidoService
         if (pedido is null) return null;
         var RegrasTransicao = pedido.Status switch
         {
-            StatusPedido.Pendente => dto.Status is StatusPedido.Iniciado or StatusPedido.Cancelado,
             StatusPedido.Iniciado => dto.Status is StatusPedido.Processado or StatusPedido.Cancelado,
             StatusPedido.Processado => dto.Status is StatusPedido.Enviado or StatusPedido.Cancelado,
             StatusPedido.Enviado => false,

@@ -24,7 +24,7 @@ public class PedidosController : ControllerBase
     }
 
     // busca um pedido pelo ID
-    [HttpGet("id")]
+    [HttpGet("{id}")]
     public async Task<IActionResult> BuscarPorId(Guid id)
     {
         var pedido = await _pedidoService.BuscarPorIdAsync(id);
@@ -51,8 +51,24 @@ public class PedidosController : ControllerBase
         }
     }
 
+    // atualizar comprador e/ou produtos do pedido
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Atualizar(Guid id, AtualizarPedidoDto dto)
+    {
+        try
+        {
+            var pedido = await _pedidoService.AtualizarAsync(id, dto);
+            if (pedido is null) return NotFound("Pedido não encontrado");
+            return Ok(pedido);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
     // patch status do pedido
-    [HttpPatch("id/status")]
+    [HttpPatch("{id}/status")]
     public async Task<IActionResult> AtualizarStatus(Guid id, AtualizarStatusDto dto)
     {
 
@@ -70,8 +86,9 @@ public class PedidosController : ControllerBase
             return BadRequest(ex.Message);
         }
     }
+
     // delete pedido
-    [HttpDelete("id")]
+    [HttpDelete("{id}")]
     public async Task<IActionResult> Deletar(Guid id)
     {
         var deletado = await _pedidoService.DeletarAsync(id);
