@@ -1,6 +1,8 @@
 using EcommerceApi.DTOs;
 using EcommerceApi.Services;
+using EcommerceApi.Converters;
 using Microsoft.AspNetCore.Mvc;
+using EcommerceApi.Enums;
 namespace EcommerceApi.Controllers;
 
 [ApiController] // definido como 'pedidos'
@@ -51,6 +53,10 @@ public class PedidosController : ControllerBase
     [HttpPatch("{id}/status")]
     public async Task<IActionResult> AtualizarStatus(Guid id, AtualizarStatusDto dto)
     {
+
+        if (!ModelState.IsValid)
+            return BadRequest($"Status inválido. Valores permitidos: {string.Join(", ", Enum.GetNames<StatusPedido>())}");
+
         try
         {
             var pedido = await _pedidoService.AtualizarStatusAsync(id, dto);
