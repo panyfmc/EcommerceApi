@@ -6,7 +6,7 @@ using EcommerceApi.Enums;
 namespace EcommerceApi.Controllers;
 
 [ApiController] // definido como 'pedidos'
-[Route("api/[controller]")]  // api/pedidos
+[Route("api/pedidos")]  // api/pedidos
 public class PedidosController : ControllerBase
 {
     private readonly PedidoService _pedidoService;
@@ -24,7 +24,7 @@ public class PedidosController : ControllerBase
     }
 
     // busca um pedido pelo ID
-    [HttpGet("{id}")]
+    [HttpGet("id")]
     public async Task<IActionResult> BuscarPorId(Guid id)
     {
         var pedido = await _pedidoService.BuscarPorIdAsync(id);
@@ -52,7 +52,7 @@ public class PedidosController : ControllerBase
     }
 
     // patch status do pedido
-    [HttpPatch("{id}/status")]
+    [HttpPatch("id/status")]
     public async Task<IActionResult> AtualizarStatus(Guid id, AtualizarStatusDto dto)
     {
 
@@ -71,7 +71,7 @@ public class PedidosController : ControllerBase
         }
     }
     // delete pedido
-    [HttpDelete("{id}")]
+    [HttpDelete("id")]
     public async Task<IActionResult> Deletar(Guid id)
     {
         var deletado = await _pedidoService.DeletarAsync(id);
