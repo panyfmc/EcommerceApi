@@ -1,10 +1,5 @@
 # 🛒 EcommerceApi
 
-
-Projeto backend desenvolvido com Django e Django REST Framework para gerenciamento de clientes, produtos e vendas, com autenticação via JWT.
-
----
-
 Projeto backend desenvolvido em **.NET 8 (C#)** e **Entity Framework Core** para o gerenciamento de pedidos e produtos de um e-commerce, utilizando o **SQL Server** como banco de dados local.
 
 ---
