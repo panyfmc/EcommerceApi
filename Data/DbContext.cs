@@ -10,4 +10,17 @@ public class AppDbContext : DbContext
     }
     public DbSet<Pedido> Pedidos => Set<Pedido>();
     public DbSet<Produto> Produtos => Set<Produto>();
+    public DbSet<PedidoItem> PedidoItems => Set<PedidoItem>();
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        // corrige o aviso do decimal
+        modelBuilder.Entity<Produto>()
+            .Property(p => p.Valor)
+            .HasPrecision(18, 2); // 18 dígitos, 2 casas decimais
+
+        modelBuilder.Entity<PedidoItem>()
+            .Property(p => p.ValorUnico)
+            .HasPrecision(18, 2); 
+    }
 }
