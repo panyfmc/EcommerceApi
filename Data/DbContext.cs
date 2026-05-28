@@ -22,5 +22,11 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<PedidoItem>()
             .Property(p => p.ValorUnico)
             .HasPrecision(18, 2); 
+
+            modelBuilder.Entity<Pedido>()
+                .HasMany(p => p.Itens)
+                .WithOne(i => i.Pedido)
+                .HasForeignKey(i => i.PedidoId)
+                .OnDelete(DeleteBehavior.Cascade);
     }
 }
