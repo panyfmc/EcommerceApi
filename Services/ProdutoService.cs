@@ -1,48 +1,47 @@
 using EcommerceApi.Data;
+using EcommerceApi.DTOs;
 using EcommerceApi.Models;
 using Microsoft.EntityFrameworkCore;
+
 namespace EcommerceApi.Services;
 
 public class ProdutoService
 {
-    private readonly AppDbContext _produto;
-    public ProdutoService(AppDbContext produto)
+    private readonly AppDbContext _context;
+
+    public ProdutoService(AppDbContext context)
     {
-        _produto = produto;
+        _context = context;
     }
 
-    // funcao para filtrar o produto pelo nome
-    public async Task<Produto?> BuscarPorNome(string nome)
+    // Buscar por ID
+    public async Task<Produto?> BuscarPorIdAsync(Guid id)
     {
-        return await _produto.Produtos .FirstOrDefaultAsync(p => p.Nome == nome);
+        return await _context.Produtos
+            .FirstOrDefaultAsync(p => p.Id == id);
     }
 
-    // funcao para listar todos os produtos
+    // Listar produtos
     public async Task<List<Produto>> ListarAsync()
     {
-        return await _produto.Produtos.ToListAsync();
-    }
-    
-    // funcao para criar um novo produto
-    public async Task<Produto> CriarAsync(Produto produto)
-    {
-        if(produto.Valor <= 0) throw new Exception("O valor precisa ser maior que zero");
-        produto.Id = Guid.NewGuid();
-        _produto.Produtos.Add(produto);
-        await _produto.SaveChangesAsync();
-        return produto;
+        return await _context.Produtos.ToListAsync();
     }
 
-    // funcao para editar o valor de um produto pelo nome
-    public async Task<ProdutoResponseDto?> EditarProdutoAsync(string nome, decimal valor)
+    // Criar produto
+    public async Task<ProdutoResponseDto> CriarAsync(CriarProdutoDto dto)
     {
-        var produto = await _produto.Produtos.FirstOrDefaultAsync(p => p.Nome == nome);
-        if (produto is null) return null;
+        if (dto.Valor <= 0)
+            throw new Exception("O valor precisa ser maior que zero");
 
-        if (valor <= 0) throw new Exception("O valor precisa ser maior que zero");
+        var produto = new Produto
+        {
+            Id = Guid.NewGuid(),
+            Nome = dto.Nome,
+            Valor = dto.Valor
+        };
 
-        produto.Valor = valor;
-        await _produto.SaveChangesAsync();
+        _context.Produtos.Add(produto);
+        await _context.SaveChangesAsync();
 
         return new ProdutoResponseDto
         {
@@ -52,16 +51,43 @@ public class ProdutoService
         };
     }
 
-    // funcao para deletar um produto pelo nome
-    public async Task<bool> DeletarAsync(string nome) 
+    // Editar produto por ID
+    public async Task<ProdutoResponseDto?> EditarProdutoAsync(Guid id, decimal valor)
     {
-        var produto = await _produto.Produtos
-            .FirstOrDefaultAsync(p => p.Nome == nome);
-        if (produto is null) return false;
-        _produto.Produtos.Remove(produto);
-        await _produto.SaveChangesAsync();
+        var produto = await _context.Produtos
+            .FirstOrDefaultAsync(p => p.Id == id);
+
+        if (produto is null)
+            return null;
+
+        if (valor <= 0)
+            throw new Exception("O valor precisa ser maior que zero");
+
+        produto.Valor = valor;
+
+        await _context.SaveChangesAsync();
+
+        return new ProdutoResponseDto
+        {
+            Id = produto.Id,
+            Nome = produto.Nome,
+            Valor = produto.Valor
+        };
+    }
+
+    // Deletar por ID
+    public async Task<bool> DeletarAsync(Guid id)
+    {
+        var produto = await _context.Produtos
+            .FirstOrDefaultAsync(p => p.Id == id);
+
+        if (produto is null)
+            return false;
+
+        _context.Produtos.Remove(produto);
+
+        await _context.SaveChangesAsync();
 
         return true;
     }
-    
 }

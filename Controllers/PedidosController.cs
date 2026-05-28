@@ -79,7 +79,7 @@ public class PedidosController : ControllerBase
         {
             var pedido = await _pedidoService.AtualizarStatusAsync(id, dto);
             if (pedido is null) return NotFound("Pedido não encontrado");
-            return Ok(pedido);    
+            return Ok(pedido.ToResponseDto());   
         }
         catch(Exception ex)
         {

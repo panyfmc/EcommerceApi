@@ -4,6 +4,7 @@ using EcommerceApi.Enums;
 using EcommerceApi.Models;
 using Microsoft.EntityFrameworkCore;
 namespace EcommerceApi.Services;
+using EcommerceApi.Converters;
 
 public class PedidoService
 {
@@ -13,25 +14,29 @@ public class PedidoService
         _context = context;
     }       
 
-    // apenas exibe todos os pedidos registrados (com detalhes)
-    public async Task<List<Pedido>> ListarAsync()
+    // exibe todos os pedidos registrados (com detalhes)
+    public async Task<List<PedidoResponseDto>> ListarAsync()
     {
-        return await _context.Pedidos
+        var pedidos = await _context.Pedidos
             .Include(p => p.Itens)
             .ThenInclude(i => i.Produto)
             .ToListAsync();
+
+        return pedidos.Select(p => p.ToResponseDto()).ToList();
     }
 
-    public async Task<Pedido?> BuscarPorIdAsync(Guid id)
+    public async Task<PedidoResponseDto?> BuscarPorIdAsync(Guid id)
     {
-        return await _context.Pedidos
-            .Include(p => p.Itens)
-            .ThenInclude(i => i.Produto)
-            .FirstOrDefaultAsync(p => p.Id == id);
+        var pedido = await _context.Pedidos
+        .Include(p => p.Itens)
+        .ThenInclude(i => i.Produto)
+        .FirstOrDefaultAsync(p => p.Id == id);
+
+        return pedido?.ToResponseDto();
     }
         
         // fazer um novo pedido  
-    public async Task<Pedido> CriarAsync(CriarPedidoDto dto)
+    public async Task<PedidoResponseDto> CriarAsync(CriarPedidoDto dto)
     {
         if (dto.Itens.Count == 0) throw new Exception("Pedido deve possuir ao menos um produto.");
 
@@ -60,6 +65,7 @@ public class PedidoService
         var pedido = new Pedido
         {
             Id = Guid.NewGuid(),
+            UsuarioId = Guid.NewGuid(),
             Comprador = dto.Comprador,
             Status = StatusPedido.Iniciado,
             Itens = itens
@@ -68,12 +74,12 @@ public class PedidoService
         _context.Pedidos.Add(pedido);
         await _context.SaveChangesAsync();
         
-        return pedido;
+        return pedido.ToResponseDto();
     }
 
 
         // atualiza comprador e/ou produtos do pedido
-    public async Task<Pedido?> AtualizarAsync(Guid id, AtualizarPedidoDto dto)
+    public async Task<PedidoResponseDto?> AtualizarAsync(Guid id, AtualizarPedidoDto dto)
     {
         var pedido = await _context.Pedidos
             .Include(p => p.Itens)
@@ -91,7 +97,7 @@ public class PedidoService
             pedido.Comprador = dto.Comprador;
 
         // atualiza itens se informado
-        if (dto.Itens is not null && dto.Itens.Count > 0)
+        if (dto.Itens is not null)
         {
             var produtoIds = dto.Itens.Select(i => i.ProdutoId).ToList();
             var produtos = await _context.Produtos
@@ -103,10 +109,7 @@ public class PedidoService
                 .Where(antigo => !dto.Itens.Any(novo => novo.ProdutoId == antigo.ProdutoId))
                 .ToList();
                 
-            foreach (var item in itensParaRemover)
-            {
-                _context.Remove(item);
-            }
+            _context.PedidoItems.RemoveRange(itensParaRemover);
 
             // 2. Atualiza os itens que restaram ou adiciona os novos
             foreach (var i in dto.Itens)
@@ -139,7 +142,7 @@ public class PedidoService
         }
 
         await _context.SaveChangesAsync();
-        return pedido;
+        return pedido.ToResponseDto();
     }
     // Atualiza apenas o status do pedido
     public async Task<Pedido?> AtualizarStatusAsync(Guid id, AtualizarStatusDto dto)
