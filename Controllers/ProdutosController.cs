@@ -1,3 +1,4 @@
+using EcommerceApi.DTOs;
 using EcommerceApi.Models;
 using EcommerceApi.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -23,28 +24,23 @@ public class ProdutosController : ControllerBase
         return Ok(produtos);
     }
 
-    // busca um produto pelo nome
-    [HttpGet("{nome}")]
-    public async Task<IActionResult> BuscarPornome(string nome)
+    // busca um produto pelo id
+    [HttpGet("{id}")]
+    public async Task<IActionResult> BuscarPorId(Guid id)
     {
-        var produto = await _produtoService.BuscarPorNome(nome);
+        var produto = await _produtoService.BuscarPorIdAsync(id);
         if (produto == null) return NotFound("produto não encontrado.");
         return Ok(produto); 
     }
 
     // adiciona um novo produto
     [HttpPost]
-    public async Task<IActionResult> Criar(Produto produto)
+    public async Task<IActionResult> Criar(CriarProdutoDto dto)
     {
         try
         {
-            var novoProduto = await _produtoService.CriarAsync(produto);
-
-            return CreatedAtAction(
-                nameof(Listar),
-                new {id = novoProduto.Id},
-                novoProduto
-            );
+            var novoProduto = await _produtoService.CriarAsync(dto);
+            return CreatedAtAction(nameof(BuscarPorId), new { id = novoProduto.Id }, novoProduto);
         }
         catch (Exception ex)
         {
@@ -53,12 +49,12 @@ public class ProdutosController : ControllerBase
     }
 
     // atualizar o valor do produto
-    [HttpPatch("{nome}/valor")] 
-    public async Task<IActionResult> EditarProduto(string nome, [FromBody] decimal valor)
+    [HttpPatch("{id}/valor")] 
+    public async Task<IActionResult> EditarProduto(Guid id, [FromBody] decimal valor)
     {
         try
         {
-            var produto = await _produtoService.EditarProdutoAsync(nome, valor);
+            var produto = await _produtoService.EditarProdutoAsync(id, valor);
             if (produto is null) return NotFound("Produto não encontrado.");
             return Ok(produto);    
         }
@@ -69,10 +65,10 @@ public class ProdutosController : ControllerBase
     }
 
     // delete do produto
-    [HttpDelete("{nome}")]
-    public async Task<IActionResult> Deletar(string nome)
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Deletar(Guid id)
     {
-        var deletado = await _produtoService.DeletarAsync(nome);
+        var deletado = await _produtoService.DeletarAsync(id);
         if (!deletado) return NotFound("Produto não encontrado.");
         return NoContent(); 
     }
