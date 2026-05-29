@@ -1,96 +1,113 @@
-# 🛒 EcommerceApi
+ # 🛒 EcommerceApi
+ 
+ Projeto backend desenvolvido em .NET 8 (C#) e Entity Framework Core para gerenciamento de pedidos e produtos de um e-commerce.
+ A aplicação segue boas práticas de arquitetura, utilizando DTOs (Data Transfer Objects) e Docker para orquestração completa do ambiente.
 
-Projeto backend desenvolvido em **.NET 8 (C#)** e **Entity Framework Core** para o gerenciamento de pedidos e produtos de um e-commerce, utilizando o **SQL Server** como banco de dados local.
+ ------------------------------------------------------------
 
----
+ ## 🚀 Tecnologias Usadas
 
-## 🚀 Tecnologias usadas
+ - C# / .NET 8
+ - ASP.NET Core Web API
+ - Entity Framework Core (SQL Server)
+ - Docker & Docker Compose
+ - Swagger (OpenAPI)
 
-- **C# / .NET 8**
-- **ASP.NET Core Web API**
-- **Entity Framework Core (SQL Server 8.0.8)**
-- **Swashbuckle / OpenAPI (Swagger)**
+ ------------------------------------------------------------
 
----
+ ## ⚙️ Como Rodar o Projeto com Docker (Recomendado)
 
-## ⚙️ Como rodar o projeto localmente
+ A forma mais simples de executar o projeto é utilizando Docker.
 
-
-### 1. Clonar o repositório
-
+ 1. Clonar o repositório:
 ```bash
-
-git clone https://github.com/panyfmc/EcommerceApi.git
-cd EcommerceApi
-
-``` 
-
-
-### 2. Configurar a String de Conexão (Connection String)
-
-No seu arquivo appsettings.json, certifique-se de que a string de conexão aponta para a sua instância local do SQL Server. Exemplo padrão:
-
-```bash
-{
-  "ConnectionStrings": {
-    "DefaultConnection": "Server=localhost;Database=EcommerceDb;Trusted_Connection=True;TrustServerCertificate=True;"
-  }
-}
-
+ git clone https:github.com/panyfmc/EcommerceApi.git
+ cd EcommerceApi
 ```
+ ------------------------------------------------------------
 
-
-### 3. Restaurar as dependências (Packages)
-
+ 2. Subir os containers:
 ```bash
-
-dotnet restore
-
+ docker-compose down -v && docker-compose up --build
 ```
+ - -v remove volumes antigos do banco
+ - --build recompila a aplicação
 
+ ------------------------------------------------------------
 
-### 4. Rodar as migrações para criar o Banco de Dados
+ 3. Acessar Swagger:
 
-Caso utilize a interface de linha de comando (dotnet ef):
+ http:localhost:8080/index.html
 
+ ------------------------------------------------------------
+
+ ## 🛠️ Como Rodar Localmente (Sem Docker)
+
+ 1. Configurar Connection String (appsettings.json):
 ```bash
-dotnet ef database update
+ {
+   "ConnectionStrings": {
+     "DefaultConnection": "Server=localhost;Database=EcommerceDb;Trusted_Connection=True;TrustServerCertificate=True;"
+   }
+ }
 ```
+ ------------------------------------------------------------
 
-
-### 5. Rodar servidor
-
+ 2. Restaurar dependências e aplicar migrations:
 ```bash
-dotnet run
+ dotnet restore
+ dotnet ef database update
 ```
+ ------------------------------------------------------------
 
-O servidor iniciará localmente e a documentação interativa do Swagger poderá ser acessada em:
-http://localhost:5111/swagger/index.html
+ 3. Executar aplicação:
+```bash
+ dotnet run
+```
+ Swagger local:
+ http:localhost:5111/swagger/index.html
 
+ ------------------------------------------------------------
 
-## 📦 Endpoints principais
+ ## 📦 Endpoints Principais
 
-### Pedidos
-- **GET /api/pedidos** → Listar todos os pedidos
-- **POST /api/pedidos** → Criar um novo pedido
-- **GET /api/pedidos/{id}** → Buscar detalhes de um pedido por ID
-- **PUT /api/pedidos/{id}** → Atualizar todos os dados de um pedido por ID
-- **DELETE /api/pedidos/{id}** → Deletar um pedido por ID
-- **PATCH /api/pedidos/{id}/status** → Atualizar parcialmente o status de um pedido
+ ----------------------------
+ PEDIDOS (/api/pedidos)
+ ----------------------------
 
+ - GET    /api/pedidos              -> Listar pedidos
+ - GET    /api/pedidos/{id}         -> Buscar pedido por ID
+ - POST   /api/pedidos              -> Criar pedido
+ - PUT    /api/pedidos/{id}         -> Atualizar pedido
+ - PATCH  /api/pedidos/{id}/status  -> Atualizar status
+ - DELETE /api/pedidos/{id}         -> Deletar pedido
 
-### Produtos
-- **GET /api/produtos** → Listar todos os produtos
-- **POST /api/produtos** → Criar um novo produto
-- **GET /api/produtos/{nome}** → Buscar detalhes de um produto pelo Nome
-- **GET /api/produtos/{nome}** → Deletar um produto pelo Nome
-- **GET /api/produtos/{nome}** → Atualizar parcialmente o valor de um produto pelo Nome
+ ----------------------------
+ PRODUTOS (/api/produtos)
+ ----------------------------
 
+ - GET    /api/produtos             -> Listar produtos
+ - GET    /api/produtos/{nome}      -> Buscar por nome
+ - POST   /api/produtos             -> Criar produto
+ - PUT    /api/produtos/{nome}      -> Atualizar produto
+ - DELETE /api/produtos/{nome}     -> Deletar produto
 
-## 📌 Observações importantes
+ ------------------------------------------------------------
 
-- Banco de Dados: O projeto está configurado para utilizar o SQL Server no localhost. Certifique-se de que o serviço do seu SQL Server esteja ativo antes de aplicar as migrations ou rodar a API.
+ ## 📌 Arquitetura e Decisões de Projeto
 
-- ORM: O mapeamento de dados e o controle transacional são gerenciados nativamente pelo Entity Framework Core.
+ - DTOs: isolamento das entidades do banco de dados
+ - UUID (Guid): chaves únicas globais
+ - Migrations automáticas no startup (Docker-ready)
+ - Fluent API para mapeamento de tabelas
+ - Arquitetura pronta para produção
 
-- Documentação: Toda a estrutura de rotas e payloads esperados podem ser visualizados diretamente na interface gráfica gerada pelo Swagger.
+ ------------------------------------------------------------
+
+ ## 💡 Objetivo do Projeto
+
+ - Boas práticas de backend
+ - Arquitetura limpa
+ - APIs REST bem estruturadas
+ - Uso profissional de DTOs
+ - Ambiente Docker replicável
