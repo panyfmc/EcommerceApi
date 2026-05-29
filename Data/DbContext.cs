@@ -1,6 +1,8 @@
 using EcommerceApi.Models;
 using Microsoft.EntityFrameworkCore;
+
 namespace EcommerceApi.Data;
+
 // conecta o projeto ao banco de dados (sql server)
 public class AppDbContext : DbContext
 {
@@ -8,12 +10,20 @@ public class AppDbContext : DbContext
     {
         
     }
+
     public DbSet<Pedido> Pedidos => Set<Pedido>();
     public DbSet<Produto> Produtos => Set<Produto>();
-    public DbSet<PedidoItem> PedidoItems => Set<PedidoItem>();
+    public DbSet<PedidoItem> PedidoItens => Set<PedidoItem>(); // Alterado de PedidoItems para PedidoItens
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
+
+        // --- Mapeamento Explícito de Nomes de Tabela ---
+        modelBuilder.Entity<Pedido>().ToTable("Pedidos");
+        modelBuilder.Entity<Produto>().ToTable("Produtos");
+        modelBuilder.Entity<PedidoItem>().ToTable("PedidoItens"); // Garante o nome correto no banco de dados
+
         // corrige o aviso do decimal
         modelBuilder.Entity<Produto>()
             .Property(p => p.Valor)
@@ -23,10 +33,11 @@ public class AppDbContext : DbContext
             .Property(p => p.ValorUnico)
             .HasPrecision(18, 2); 
 
-            modelBuilder.Entity<Pedido>()
-                .HasMany(p => p.Itens)
-                .WithOne(i => i.Pedido)
-                .HasForeignKey(i => i.PedidoId)
-                .OnDelete(DeleteBehavior.Cascade);
+        // Relacionamento Um-para-Muitos (Pedido -> Itens)
+        modelBuilder.Entity<Pedido>()
+            .HasMany(p => p.Itens)
+            .WithOne(i => i.Pedido)
+            .HasForeignKey(i => i.PedidoId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }
