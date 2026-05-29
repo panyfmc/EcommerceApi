@@ -87,10 +87,10 @@
  ----------------------------
 
  - GET    /api/produtos             -> Listar produtos
- - GET    /api/produtos/{nome}      -> Buscar por nome
+ - GET    /api/produtos/{id}      -> Buscar por id
  - POST   /api/produtos             -> Criar produto
- - PUT    /api/produtos/{nome}      -> Atualizar produto
- - DELETE /api/produtos/{nome}     -> Deletar produto
+ - PUT    /api/produtos/{id}      -> Atualizar produto
+ - DELETE /api/produtos/{id}     -> Deletar produto
 
  ------------------------------------------------------------
 
