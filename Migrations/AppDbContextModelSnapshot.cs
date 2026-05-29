@@ -35,9 +35,12 @@ namespace EcommerceApi.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
+                    b.Property<Guid>("UsuarioId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("Id");
 
-                    b.ToTable("Pedidos");
+                    b.ToTable("Pedidos", (string)null);
                 });
 
             modelBuilder.Entity("EcommerceApi.Models.PedidoItem", b =>
@@ -65,7 +68,7 @@ namespace EcommerceApi.Migrations
 
                     b.HasIndex("ProdutoId");
 
-                    b.ToTable("PedidoItems");
+                    b.ToTable("PedidoItens", (string)null);
                 });
 
             modelBuilder.Entity("EcommerceApi.Models.Produto", b =>
@@ -84,12 +87,12 @@ namespace EcommerceApi.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Produtos");
+                    b.ToTable("Produtos", (string)null);
                 });
 
             modelBuilder.Entity("EcommerceApi.Models.PedidoItem", b =>
                 {
-                    b.HasOne("EcommerceApi.Models.Pedido", null)
+                    b.HasOne("EcommerceApi.Models.Pedido", "Pedido")
                         .WithMany("Itens")
                         .HasForeignKey("PedidoId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -100,6 +103,8 @@ namespace EcommerceApi.Migrations
                         .HasForeignKey("ProdutoId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Pedido");
 
                     b.Navigation("Produto");
                 });
