@@ -13,7 +13,7 @@ public class AppDbContext : DbContext
 
     public DbSet<Pedido> Pedidos => Set<Pedido>();
     public DbSet<Produto> Produtos => Set<Produto>();
-    public DbSet<PedidoItem> PedidoItens => Set<PedidoItem>(); // Alterado de PedidoItems para PedidoItens
+    public DbSet<PedidoItem> PedidoItens => Set<PedidoItem>(); 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -22,7 +22,7 @@ public class AppDbContext : DbContext
         // --- Mapeamento Explícito de Nomes de Tabela ---
         modelBuilder.Entity<Pedido>().ToTable("Pedidos");
         modelBuilder.Entity<Produto>().ToTable("Produtos");
-        modelBuilder.Entity<PedidoItem>().ToTable("PedidoItens"); // Garante o nome correto no banco de dados
+        modelBuilder.Entity<PedidoItem>().ToTable("PedidoItens"); 
 
         // corrige o aviso do decimal
         modelBuilder.Entity<Produto>()
