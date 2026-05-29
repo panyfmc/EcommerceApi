@@ -109,7 +109,7 @@ public class PedidoService
                 .Where(antigo => !dto.Itens.Any(novo => novo.ProdutoId == antigo.ProdutoId))
                 .ToList();
                 
-            _context.PedidoItems.RemoveRange(itensParaRemover);
+            _context.PedidoItens.RemoveRange(itensParaRemover);
 
             // 2. Atualiza os itens que restaram ou adiciona os novos
             foreach (var i in dto.Itens)
