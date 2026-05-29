@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EcommerceApi.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260527152121_AddPedidoItensTableV2")]
-    partial class AddPedidoItensTableV2
+    [Migration("20260529004218_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -38,9 +38,12 @@ namespace EcommerceApi.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
+                    b.Property<Guid>("UsuarioId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("Id");
 
-                    b.ToTable("Pedidos");
+                    b.ToTable("Pedidos", (string)null);
                 });
 
             modelBuilder.Entity("EcommerceApi.Models.PedidoItem", b =>
@@ -49,7 +52,7 @@ namespace EcommerceApi.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("PedidoId")
+                    b.Property<Guid>("PedidoId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("ProdutoId")
@@ -68,7 +71,7 @@ namespace EcommerceApi.Migrations
 
                     b.HasIndex("ProdutoId");
 
-                    b.ToTable("PedidoItems");
+                    b.ToTable("PedidoItens", (string)null);
                 });
 
             modelBuilder.Entity("EcommerceApi.Models.Produto", b =>
@@ -87,20 +90,24 @@ namespace EcommerceApi.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Produtos");
+                    b.ToTable("Produtos", (string)null);
                 });
 
             modelBuilder.Entity("EcommerceApi.Models.PedidoItem", b =>
                 {
-                    b.HasOne("EcommerceApi.Models.Pedido", null)
+                    b.HasOne("EcommerceApi.Models.Pedido", "Pedido")
                         .WithMany("Itens")
-                        .HasForeignKey("PedidoId");
+                        .HasForeignKey("PedidoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("EcommerceApi.Models.Produto", "Produto")
                         .WithMany()
                         .HasForeignKey("ProdutoId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Pedido");
 
                     b.Navigation("Produto");
                 });
